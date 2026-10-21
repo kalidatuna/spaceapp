@@ -139,6 +139,29 @@ describe("real Temporal sandbox (CORE-006)", () => {
     expect(steps).toBe(2);
   }, 90_000);
 
+  it("dotGoalWorkflow continues as new on a still-unfinished goal and later finishes", async () => {
+    // The goal remains WAITING through the entire original 300-iteration
+    // history budget, so this exercises real Temporal continueAsNew rather
+    // than a mocked callback or a manually injected continue command.
+    let steps = 0;
+    await sandbox("dot-continuation", {
+      dotGoalStep: async () => (++steps <= 300
+        ? { state: "WAITING", runId: null, goalStatus: "RUNNING" }
+        : { state: "DONE", runId: null, goalStatus: "DONE" }),
+      dotGoalObserve: async () => ({ run: "DONE", goalStatus: "DONE" })
+    }, async taskQueue => {
+      const workflowId = id("dot-goal-continue");
+      const handle = await env.client.workflow.start("dotGoalWorkflow", {
+        workflowId, taskQueue, args: [{ goalId: "goal:synthetic-still-running" }]
+      });
+      const first = env.client.workflow.getHandle(workflowId, handle.firstExecutionRunId);
+      expect(await handle.result()).toEqual({ goalStatus: "DONE" });
+      const history = await first.fetchHistory();
+      expect(history.events?.some(event => event.workflowExecutionContinuedAsNewEventAttributes)).toBe(true);
+      expect(steps).toBe(301);
+    });
+  }, 150_000);
+
   it("dummyTurnWorkflow retries its real Temporal activity and records completion", async () => {
     let starts = 0;
     await sandbox("dummy", {
@@ -248,6 +271,57 @@ describe("real Temporal sandbox (CORE-006)", () => {
       }, [], name === "legacy" ? legacyPath : workflowPath);
     }, 90_000);
   }
+
+  it("carries a prepared Room Agent turn through real continue-as-new and executes it exactly once", async () => {
+    let prepared = 0;
+    let childTurns = 0;
+    let finishedTurns = 0;
+    let resolveFinished!: () => void;
+    const finished = new Promise<void>(resolve => { resolveFinished = resolve; });
+    const roomId = "room:carry-real";
+    const missionId = "mission:carry-real";
+    const preparedItem = roomAgentSupervisorQueueItemSchema.parse({
+      missionId,
+      turn: {
+        ...dummyInput(), roomId, agentRunId: id("prepared-child"),
+        roomAgentContinuation: { sourceRunId: "agent_run:synthetic-source", generation: 1 }
+      }
+    });
+    await sandbox("room-carry-state", {
+      prepareRoomAgentBackgroundContinuation: async () => {
+        prepared++;
+        return { state: "READY", item: preparedItem };
+      },
+      checkRoomAgentSupervisorTurn: async () => "READY",
+      runCodexAppServerTurn: async () => {
+        childTurns++;
+        return { status: "COMPLETED", message: "synthetic completed" };
+      },
+      finishRoomAgentSupervisorTurn: async () => { finishedTurns++; resolveFinished(); },
+      discardRoomAgentSupervisorTurn: async () => undefined
+    }, async taskQueue => {
+      const workflowId = id("supervisor-carried-real");
+      const handle = await env.client.workflow.start("roomAgentSupervisorWorkflow", {
+        workflowId, taskQueue,
+        args: [{ roomId, processedCount: 50, monitoringMissionIds: [missionId] }]
+      });
+      const first = env.client.workflow.getHandle(workflowId, handle.firstExecutionRunId);
+      await finished;
+      const history = await first.fetchHistory();
+      const continuation = history.events?.find(event => event.workflowExecutionContinuedAsNewEventAttributes);
+      expect(continuation).toBeDefined();
+      const payload = continuation?.workflowExecutionContinuedAsNewEventAttributes?.input?.payloads?.[0];
+      expect(payload?.data).toBeDefined();
+      const carried = roomAgentSupervisorInputSchema.parse(JSON.parse(Buffer.from(payload!.data!).toString("utf8")));
+      expect(carried.roomId).toBe(roomId);
+      expect(carried.pending).toEqual([preparedItem]);
+      expect(carried.monitoringMissionIds).toContain(missionId);
+      expect(prepared).toBe(1);
+      expect(childTurns).toBe(1);
+      expect(finishedTurns).toBe(1);
+      await handle.terminate("synthetic carried turn completed");
+    });
+  }, 90_000);
 
   it("room supervisor stop interrupts a pending mission inside the true sandbox", async () => {
     let discarded = 0;
