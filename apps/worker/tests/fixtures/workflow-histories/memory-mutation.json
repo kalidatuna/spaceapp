@@ -35,7 +35,7 @@
           "seconds": "10"
         },
         "originalExecutionRunId": "496ec7a2-39cd-4c32-ada1-5e6a66612531",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "firstExecutionRunId": "496ec7a2-39cd-4c32-ada1-5e6a66612531",
         "attempt": 1,
         "firstWorkflowTaskBackoff": {},
@@ -69,7 +69,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "407"
       }
     },
@@ -82,7 +82,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {
           "coreUsedFlags": [
@@ -155,7 +155,7 @@
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "5",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "attempt": 2
       }
     },
@@ -179,7 +179,7 @@
         },
         "scheduledEventId": "5",
         "startedEventId": "6",
-        "identity": "468364@linux-raper"
+        "identity": "synthetic@temporal-sandbox"
       }
     },
     {
@@ -209,7 +209,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "1097"
       }
     },
@@ -222,7 +222,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {},
         "meteringMetadata": {}

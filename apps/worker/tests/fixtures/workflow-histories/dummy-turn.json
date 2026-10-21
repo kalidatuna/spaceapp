@@ -35,7 +35,7 @@
           "seconds": "10"
         },
         "originalExecutionRunId": "df523070-184c-47c4-a462-468ea8c8d14f",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "firstExecutionRunId": "df523070-184c-47c4-a462-468ea8c8d14f",
         "attempt": 1,
         "firstWorkflowTaskBackoff": {},
@@ -69,7 +69,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "493"
       }
     },
@@ -82,7 +82,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {
           "coreUsedFlags": [
@@ -155,7 +155,7 @@
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "5",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "attempt": 3
       }
     },
@@ -178,7 +178,7 @@
         },
         "scheduledEventId": "5",
         "startedEventId": "6",
-        "identity": "468364@linux-raper"
+        "identity": "synthetic@temporal-sandbox"
       }
     },
     {
@@ -208,7 +208,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "1247"
       }
     },
@@ -221,7 +221,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {},
         "meteringMetadata": {}
@@ -286,7 +286,7 @@
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "11",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "attempt": 1
       }
     },
@@ -310,7 +310,7 @@
         },
         "scheduledEventId": "11",
         "startedEventId": "12",
-        "identity": "468364@linux-raper"
+        "identity": "synthetic@temporal-sandbox"
       }
     },
     {
@@ -340,7 +340,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "2021"
       }
     },
@@ -353,7 +353,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {},
         "meteringMetadata": {}

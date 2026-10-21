@@ -103,7 +103,12 @@ server**. It covers signal-driven goal wake-ups, retry exhaustion, child
 workflows, supervisor stop and its current/legacy 50-item continuation as well
 as the 250-poll history boundary. The checked-in JSON histories under
 `apps/worker/tests/fixtures/workflow-histories/` contain only synthetic test
-values. The suite replays every history using the current workflow bundle, and
+values. When the fixture recorder is explicitly enabled, its serializer
+replaces recorded worker PID/hostname identities and failure stack traces
+with synthetic placeholders before writing JSON. It preserves event IDs,
+payloads and failure codes so the replay guard cannot conceal nondeterminism.
+The suite rejects native home-directory paths and recorder identities in
+committed histories. The suite replays every history using the current workflow bundle, and
 the test-only `bounty-replay-broken.ts` verifies that adding an unversioned
 timer produces a real `DeterminismViolationError`.
 

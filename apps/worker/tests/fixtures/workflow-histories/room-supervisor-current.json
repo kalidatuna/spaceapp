@@ -35,7 +35,7 @@
           "seconds": "10"
         },
         "originalExecutionRunId": "0b829020-96ef-48fc-99c7-5b6c0db776d1",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "firstExecutionRunId": "0b829020-96ef-48fc-99c7-5b6c0db776d1",
         "attempt": 1,
         "firstWorkflowTaskBackoff": {},
@@ -69,7 +69,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "485"
       }
     },
@@ -82,7 +82,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {
           "coreUsedFlags": [
@@ -161,7 +161,7 @@
             }
           ]
         },
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "header": {}
       }
     },
@@ -192,7 +192,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "1545"
       }
     },
@@ -205,7 +205,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {
           "langUsedFlags": [
@@ -274,7 +274,7 @@
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "11",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "attempt": 1
       }
     },
@@ -298,7 +298,7 @@
         },
         "scheduledEventId": "11",
         "startedEventId": "12",
-        "identity": "468364@linux-raper"
+        "identity": "synthetic@temporal-sandbox"
       }
     },
     {
@@ -328,7 +328,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "2534"
       }
     },
@@ -341,7 +341,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {},
         "meteringMetadata": {}
@@ -406,7 +406,7 @@
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "17",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "attempt": 1
       }
     },
@@ -429,7 +429,7 @@
         },
         "scheduledEventId": "17",
         "startedEventId": "18",
-        "identity": "468364@linux-raper"
+        "identity": "synthetic@temporal-sandbox"
       }
     },
     {
@@ -459,7 +459,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "20",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "historySizeBytes": "3579"
       }
     },
@@ -472,7 +472,7 @@
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "20",
-        "identity": "468364@linux-raper",
+        "identity": "synthetic@temporal-sandbox",
         "binaryChecksum": "@temporalio/worker@1.24.0+ad2eab8547cda14a67a0966b82dc64ad972a361e3e857b61bed085c1678e76fa",
         "sdkMetadata": {},
         "meteringMetadata": {}

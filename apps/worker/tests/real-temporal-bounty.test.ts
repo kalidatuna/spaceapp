@@ -68,7 +68,21 @@ function saveHistory(name: string, history: Awaited<ReturnType<ReturnType<typeof
   const json = temporalProto.temporal.api.history.v1.History.toObject(history, {
     longs: String, enums: String, bytes: String
   });
-  writeFileSync(join(historiesDir, `${name}.json`), JSON.stringify(json, null, 2) + "\n");
+  writeFileSync(join(historiesDir, `${name}.json`), JSON.stringify(redactFixtureIdentity(json), null, 2) + "\n");
+}
+
+/** Remove host/PID and absolute native stack paths from synthetic replay fixtures.
+ * Keep event IDs, payloads and deterministic failure codes unchanged; changing
+ * those would conceal a workflow replay regression rather than sanitizing it.
+ */
+function redactFixtureIdentity(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(redactFixtureIdentity);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) => {
+    if (key === "identity" && typeof entry === "string") return [key, "synthetic@temporal-sandbox"];
+    if (key === "stackTrace" && typeof entry === "string") return [key, "Synthetic test failure: stack trace redacted"];
+    return [key, redactFixtureIdentity(entry)];
+  }));
 }
 
 function loadHistory(name: string) {
@@ -238,29 +252,36 @@ describe("real Temporal sandbox (CORE-006)", () => {
   it("room supervisor stop interrupts a pending mission inside the true sandbox", async () => {
     let discarded = 0;
     let interrupted = 0;
-    await sandbox("supervisor-stop", {
-      discardRoomAgentSupervisorTurn: async () => { discarded++; },
-      finishRoomAgentSupervisorTurn: async (event: { status?: string }) => {
-        if (event.status === "INTERRUPTED") interrupted++;
-      },
-      checkRoomAgentSupervisorTurn: async () => "SKIP"
-    }, async q => {
-      const workflowId = id("room-supervisor-stop");
-      const handle = await env.client.workflow.start("roomAgentSupervisorWorkflow", {
-        workflowId, taskQueue: q, args: [{ roomId: "room:synthetic" }]
-      });
-      const item = roomAgentSupervisorQueueItemSchema.parse({ missionId: "mission:synthetic-stop", turn: {
-        ...dummyInput(), agentRunId: id("agent-run-stop")
-      } });
-      await handle.signal(ROOM_AGENT_ENQUEUE_SIGNAL, item);
-      await handle.signal(ROOM_AGENT_STOP_SIGNAL, { missionId: item.missionId, reason: "Synthetic stop" });
-      for (let i = 0; i < 10 && !interrupted; i++) await env.sleep("1 second");
-      // The workflow can start processing between signals. The authoritative
-      // invariant is an INTERRUPTED outcome, not whether discard ran.
-      expect(interrupted).toBeGreaterThan(0);
-      await handle.terminate("synthetic stop observed");
-      saveHistory("room-supervisor-stop", await handle.fetchHistory());
+    const taskQueue = `bounty-supervisor-stop-${randomUUID()}`;
+    const worker = await Worker.create({
+      connection: env.nativeConnection, taskQueue, workflowsPath: workflowPath,
+      activities: {
+        discardRoomAgentSupervisorTurn: async () => { discarded++; },
+        finishRoomAgentSupervisorTurn: async (event: { status?: string }) => {
+          if (event.status === "INTERRUPTED") interrupted++;
+        },
+        checkRoomAgentSupervisorTurn: async () => "SKIP"
+      }
     });
+    const workflowId = id("room-supervisor-stop");
+    const handle = await env.client.workflow.start("roomAgentSupervisorWorkflow", {
+      workflowId, taskQueue, args: [{ roomId: "room:synthetic" }]
+    });
+    const item = roomAgentSupervisorQueueItemSchema.parse({ missionId: "mission:synthetic-stop", turn: {
+      ...dummyInput(), agentRunId: id("agent-run-stop")
+    } });
+    // Buffer both signals on the REAL Temporal service before starting worker
+    // polling; a concurrent SKIP activity could otherwise finish the mission
+    // before STOP is received, producing a false-negative race.
+    await handle.signal(ROOM_AGENT_ENQUEUE_SIGNAL, item);
+    await handle.signal(ROOM_AGENT_STOP_SIGNAL, { missionId: item.missionId, reason: "Synthetic stop" });
+    await worker.runUntil(async () => {
+      for (let i = 0; i < 10 && !interrupted; i++) await env.sleep("1 second");
+      expect(interrupted).toBeGreaterThan(0);
+    });
+    expect(discarded).toBeGreaterThan(0);
+    await handle.terminate("synthetic stop observed");
+    saveHistory("room-supervisor-stop", await handle.fetchHistory());
   }, 90_000);
 
   it("room supervisor bounds history after 250 real timed polls and carries monitoring IDs", async () => {
@@ -293,6 +314,17 @@ describe("real Temporal sandbox (CORE-006)", () => {
 });
 
 describe("recorded synthetic history replay gate", () => {
+  it("does not commit recorder machine identities or absolute stack paths in synthetic histories", () => {
+    for (const name of scenarios) {
+      const text = readFileSync(join(historiesDir, `${name}.json`), "utf8");
+      const object = JSON.parse(text);
+      expect(text).not.toMatch(/\"identity\": \"\d+@/);
+      expect(text).not.toMatch(/\/home\/[^\s"\\]+/);
+      expect(text).not.toMatch(/\"stackTrace\": \"[^\"]*\n/);
+      // The recorded syntax must remain valid for the native replay decoder.
+      expect(temporalProto.temporal.api.history.v1.History.fromObject(object)).toBeDefined();
+    }
+  });
   it("replays each pinned real sandbox history against production workflows", async () => {
     if (record) return;
     const names = scenarios.filter(x => readdirSync(historiesDir).includes(`${x}.json`));
