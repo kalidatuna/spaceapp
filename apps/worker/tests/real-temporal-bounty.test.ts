@@ -237,9 +237,12 @@ describe("real Temporal sandbox (CORE-006)", () => {
 
   it("room supervisor stop interrupts a pending mission inside the true sandbox", async () => {
     let discarded = 0;
+    let interrupted = 0;
     await sandbox("supervisor-stop", {
       discardRoomAgentSupervisorTurn: async () => { discarded++; },
-      finishRoomAgentSupervisorTurn: async () => undefined,
+      finishRoomAgentSupervisorTurn: async (event: { status?: string }) => {
+        if (event.status === "INTERRUPTED") interrupted++;
+      },
       checkRoomAgentSupervisorTurn: async () => "SKIP"
     }, async q => {
       const workflowId = id("room-supervisor-stop");
@@ -251,8 +254,10 @@ describe("real Temporal sandbox (CORE-006)", () => {
       } });
       await handle.signal(ROOM_AGENT_ENQUEUE_SIGNAL, item);
       await handle.signal(ROOM_AGENT_STOP_SIGNAL, { missionId: item.missionId, reason: "Synthetic stop" });
-      await env.sleep("1 second");
-      expect(discarded).toBeGreaterThan(0);
+      for (let i = 0; i < 10 && !interrupted; i++) await env.sleep("1 second");
+      // The workflow can start processing between signals. The authoritative
+      // invariant is an INTERRUPTED outcome, not whether discard ran.
+      expect(interrupted).toBeGreaterThan(0);
       await handle.terminate("synthetic stop observed");
       saveHistory("room-supervisor-stop", await handle.fetchHistory());
     });
