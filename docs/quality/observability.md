@@ -247,8 +247,18 @@ links to its preceding run, rather than requiring a separate trace lookup.
 Temporal server and a local HTTP collector, proving the API → workflow → child
 workflow → activity span tree, absence of prompt content, replay suppression
 and continue-as-new linkage without a Docker dependency.
-Untraced long-lived supervisor roots and background mission trace-to-trace
-links remain separate follow-up coverage for full bounty #61 acceptance.
+Long-lived Temporal-only supervisor roots with no originating W3C context now
+get an independent, deterministic trace ID derived from their workflow ID.
+Child workflows and activities inherit the span context via Temporal headers.
+Real integration tests prove the new root and descendants form one trace.
+
+Room Agent background continuations use a distinct application trace:bg-*
+identifier. When the previous turn carried W3C context, its optional
+roomAgentContinuation.sourceTraceparent is carried forward as an OTLP link
+to the prior trace context, without copying instructions or prompt text.
+Older persisted turns without W3C context have no valid upstream span to
+link, and this limitation is not hidden or guessed away. A real Temporal
+integration test covers a cross-trace link and prompt exclusion.
 
 ### Replay compatibility
 

@@ -118,4 +118,69 @@ describe("OTLP API → Temporal workflow → child workflow → activity", () =>
       await exporter.close();
     }
   }, 90_000);
+
+  it("gives a Temporal-only supervisor root a stable trace and traces its child/activity", async () => {
+    posted.length = 0;
+    const exporter = createOtlpSpanExporter({ endpoint, serviceName: "test-worker", flushIntervalMs: 60_000 });
+    const taskQueue = `otlp-supervisor-${randomUUID()}`;
+    const worker = await Worker.create({
+      connection: env.nativeConnection, taskQueue, workflowsPath,
+      activities: { runSyntheticActivity: async () => "OK" },
+      interceptors: { workflowModules: [interceptorPath], activity: [createActivityObservabilityInterceptors({ spans: exporter })] },
+      sinks: workflowOtlpSinks(exporter)
+    });
+    try {
+      const result = await worker.runUntil(() => env.client.workflow.execute(
+        "otlpBountySupervisorRootWorkflow",
+        { workflowId: `supervisor-${randomUUID()}`, taskQueue, args: [{ prompt: secretPrompt }] }
+      ));
+      expect(result).toBe("OK");
+      await exporter.flush();
+      const spans = posted.flatMap(p => p.resourceSpans.flatMap((r: any) => r.scopeSpans.flatMap((s: any) => s.spans)));
+      expect(spans).toHaveLength(3);
+      const root = spans.find((s: any) => s.name === "workflow otlpBountySupervisorRootWorkflow");
+      const child = spans.find((s: any) => s.name === "workflow otlpBountyChildWorkflow");
+      const activity = spans.find((s: any) => s.name === "activity runSyntheticActivity");
+      expect(root).toBeDefined();
+      expect(root.parentSpanId).toBeUndefined();
+      expect(root.traceId).toMatch(/^[0-9a-f]{32}$/);
+      expect(child?.parentSpanId).toBe(root.spanId);
+      expect(activity?.parentSpanId).toBe(child?.spanId);
+      expect(spans.every((s: any) => s.traceId === root.traceId)).toBe(true);
+      expect(JSON.stringify(posted)).not.toContain(secretPrompt);
+    } finally { await exporter.close(); }
+  }, 90_000);
+
+  it("links a separate background continuation trace to the preceding W3C context without exporting any source text", async () => {
+    posted.length = 0;
+    const exporter = createOtlpSpanExporter({ endpoint, serviceName: "test-worker", flushIntervalMs: 60_000 });
+    const taskQueue = `otlp-background-${randomUUID()}`;
+    const worker = await Worker.create({
+      connection: env.nativeConnection, taskQueue, workflowsPath,
+      activities: { runSyntheticActivity: async () => "OK" },
+      interceptors: { workflowModules: [interceptorPath], activity: [createActivityObservabilityInterceptors({ spans: exporter })] },
+      sinks: workflowOtlpSinks(exporter)
+    });
+    const previousTraceId = "abcdef0123456789abcdef0123456789";
+    const previousSpanId = "1234567890abcdef";
+    try {
+      const result = await worker.runUntil(() => env.client.workflow.execute(
+        "otlpBountyBackgroundWorkflow",
+        { workflowId: `background-${randomUUID()}`, taskQueue,
+          args: [{
+            traceparent, roomAgentContinuation: {
+              sourceRunId: "agent_run:prior", generation: 1,
+              sourceTraceparent: `00-${previousTraceId}-${previousSpanId}-01`
+            }, prompt: secretPrompt
+          }] }
+      ));
+      expect(result).toBe("READY");
+      await exporter.flush();
+      const spans = posted.flatMap(p => p.resourceSpans.flatMap((r: any) => r.scopeSpans.flatMap((s: any) => s.spans)));
+      expect(spans).toHaveLength(1);
+      expect(spans[0].traceId).toBe(traceId);
+      expect(spans[0].links).toContainEqual({ traceId: previousTraceId, spanId: previousSpanId });
+      expect(JSON.stringify(posted)).not.toContain(secretPrompt);
+    } finally { await exporter.close(); }
+  }, 90_000);
 });

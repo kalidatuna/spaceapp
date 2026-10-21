@@ -26,8 +26,14 @@ export function workflowOtlpSinks(spans: SpanExporter | null): InjectedSinks<{
               "space.workflow_id": report.workflowId,
               "space.run_id": report.runId
             },
-            ...(report.continuedFromRunId ? {
-              links: [{ traceId: report.traceId, spanId: (report.continuedFromRunId.replace(/-/g, "").slice(-16) || "0000000000000001") }]
+            ...((report.continuedFromRunId || report.links?.length) ? {
+              links: [
+                ...(report.continuedFromRunId ? [{
+                  traceId: report.traceId,
+                  spanId: (report.continuedFromRunId.replace(/-/g, "").slice(-16) || "0000000000000001")
+                }] : []),
+                ...(report.links ?? [])
+              ]
             } : {}),
             error: report.error
           });

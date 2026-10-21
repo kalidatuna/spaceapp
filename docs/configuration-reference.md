@@ -52,6 +52,9 @@ linked spans. Only named
 identifiers, workflow/activity type, outcome and stable failure classification
 are emitted, never prompts or model responses. The trace exporter is optional
 and collector failures never fail or block workflow execution.
+Long-lived Temporal-only supervisors with no request header create a
+deterministic trace root; background continuations also link to their
+previous W3C context when one is available.
 
 ## Optional modules
 
